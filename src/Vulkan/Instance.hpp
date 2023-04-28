@@ -13,7 +13,7 @@ namespace vkInit
         CONSOLE_NEWLINE();
         CONSOLE_DEBUG("Available Extensions: ");
         for (const auto& extn : availableExtensions)
-            CONSOLE_DEBUG("\t %s", extn.extensionName);
+            CONSOLE_DEBUG("\t %s", static_cast<const char*>(extn.extensionName));
 
         for (const char* extension : extensions)
         {
@@ -46,7 +46,7 @@ namespace vkInit
         CONSOLE_NEWLINE();
         CONSOLE_DEBUG("Available Layers: ");
         for (const auto& layerProps : availableLayers)
-            CONSOLE_DEBUG("\t %s", layerProps.layerName);
+            CONSOLE_DEBUG("\t %s", static_cast<const char*>(layerProps.layerName));
 
         for (const char* layer : layers)
         {

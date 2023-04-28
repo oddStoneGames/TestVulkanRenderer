@@ -21,7 +21,7 @@ namespace vkInit
         }
 
         CONSOLE_NEWLINE();
-        CONSOLE_INFO("%s%s, %s", initString, properties.deviceName, deviceTypeString);
+        CONSOLE_INFO("%s%s, %s", initString, static_cast<const char*>(properties.deviceName), deviceTypeString);
         CONSOLE_NEWLINE();
     }
 

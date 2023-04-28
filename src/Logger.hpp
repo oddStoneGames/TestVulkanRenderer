@@ -10,6 +10,7 @@
 #include <cstdio>
 #include <ctime>
 #include <mutex>
+#include <memory>
 
 class Logger
 {
@@ -145,8 +146,8 @@ private:
             std::printf("%s ", m_TimeBuffer);
 
             const char* messagePriorityString = MessagePriorityToString(messagePriority);
-            std::printf(messagePriorityString);
-            std::printf(m_InitialString);
+            std::printf("%s", messagePriorityString);
+            std::printf("%s", m_InitialString);
             std::printf(message, args...);
             std::printf("\n");
 
@@ -155,8 +156,8 @@ private:
             if (m_File)
             {
                 std::fprintf(m_File, "%s ", m_TimeBuffer);
-                std::fprintf(m_File, messagePriorityString);
-                std::fprintf(m_File, m_InitialString);
+                std::fprintf(m_File, "%s", messagePriorityString);
+                std::fprintf(m_File, "%s", m_InitialString);
                 std::fprintf(m_File, message, args...);
                 std::fprintf(m_File, "\n");
             }
