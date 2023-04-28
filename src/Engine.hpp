@@ -12,8 +12,14 @@ public:
     Engine(uint32_t width = 1280, uint32_t height = 720);
     ~Engine();
 private:
-    GLFWwindow* m_Window;
+    void CreateVulkanInstance();
+private:
+    // Window Properties and Window
     uint32_t m_Width, m_Height;
+    GLFWwindow* m_Window{ nullptr };
+
+    // Vulkan Instance
+    vk::Instance m_Instance{ nullptr };
 };
 
 #endif

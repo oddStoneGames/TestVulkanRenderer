@@ -32,6 +32,11 @@ list(APPEND INCLUDES vendor/stb)
 # GLM
 list(APPEND INCLUDES vendor/glm)
 
+# PThread
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+list(APPEND LIBS Threads::Threads)
+
 # Add extra libraries based on the operating system.
 if(WIN32)
     list(APPEND gdi32 user32)
@@ -39,7 +44,8 @@ else()
     list(APPEND LIBS X11 Xxf86vm Xrandr pthread Xi dl Xinerama Xcursor)
 endif()
 
-set(SOURCE_FILES src/Engine.cpp src/Engine.hpp src/EntryPoint.cpp)
+set(SOURCE_FILES src/Engine.cpp src/Engine.hpp src/EntryPoint.cpp
+                 src/Logger.cpp src/Logger.hpp)
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 
 # Set this project as startup project
