@@ -45,7 +45,9 @@ else()
 endif()
 
 set(SOURCE_FILES src/Engine.cpp src/Engine.hpp src/EntryPoint.cpp
-                 src/Logger.cpp src/Logger.hpp)
+                 src/Logger.cpp src/Logger.hpp
+                 src/Config.hpp
+                 src/Vulkan/Instance.hpp src/Vulkan/Debugging.hpp src/Vulkan/Device.hpp)
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 
 # Set this project as startup project

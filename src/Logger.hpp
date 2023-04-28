@@ -74,6 +74,14 @@ public:
     // Format follows <ctime> strftime format specification
     const char* GetTimestampFormat() const { return m_TimestampFormat; }
 
+    // Just prints a new line.
+    void NewLine()
+    {
+        std::printf("\n");
+        if (m_File)
+            std::fprintf(m_File, "\n");
+    }
+
     // Log a message (format + optional args, follow printf specification)
     // with log priority level Log::Trace
     template<typename... Args>
@@ -175,15 +183,19 @@ private:
 };
 
 #ifndef NDEBUG
-    #define DEBUG(...) Logger::GetLogger()->Debug(__VA_ARGS__)
-    #define INFO(...)  Logger::GetLogger()->Info(__VA_ARGS__)
-    #define WARN(...)  Logger::GetLogger()->Warn(__VA_ARGS__)
-    #define ERROR(...) Logger::GetLogger()->Error(__VA_ARGS__)
+    #define CONSOLE_NEWLINE() Logger::GetLogger()->NewLine()
+    #define CONSOLE_TRACE(...) Logger::GetLogger()->Trace(__VA_ARGS__)
+    #define CONSOLE_DEBUG(...) Logger::GetLogger()->Debug(__VA_ARGS__)
+    #define CONSOLE_INFO(...)  Logger::GetLogger()->Info(__VA_ARGS__)
+    #define CONSOLE_WARN(...)  Logger::GetLogger()->Warn(__VA_ARGS__)
+    #define CONSOLE_ERROR(...) Logger::GetLogger()->Error(__VA_ARGS__)
 #else
-    #define DEBUG(...) 
-    #define INFO(...)	
-    #define WARN(...)	 
-    #define ERROR(...)  
+    #define CONSOLE_NEWLINE()
+    #define CONSOLE_TRACE(...) 
+    #define CONSOLE_DEBUG(...) 
+    #define CONSOLE_INFO(...) 
+    #define CONSOLE_WARN(...) 
+    #define CONSOLE_ERROR(...)  
 #endif
 
 #endif // !LOG_HPP
