@@ -7,5 +7,6 @@
 #include <string>
 #include <vector>
 #include <set>
+#include <optional>
 
 #endif // !CONFIG_HPP

@@ -16,7 +16,7 @@ public:
 private:
     void CreateGLFWWindow();
     void CreateVulkanInstance();
-    void CreatePhysicalDevice();
+    void CreateDevice();
 private:
     // Window Properties and Window
     uint32_t m_Width, m_Height;
@@ -26,9 +26,12 @@ private:
     vk::Instance m_Instance{ nullptr }; // Vulkan Instance
     vk::DebugUtilsMessengerEXT m_DebugMessenger{ nullptr }; // Debug Callback
     vk::DispatchLoaderDynamic m_Dldi; // Dynamic Instance Dispatcher
+    vk::SurfaceKHR m_Surface; // Surface
 
-    vk::PhysicalDevice m_PhysicalDevice; // Vulkan Physical Device
-
+    vk::PhysicalDevice m_PhysicalDevice{ nullptr }; // Vulkan Physical Device
+    vk::Device m_Device{ nullptr }; // Vulkan Logical Device
+    vk::Queue m_GraphicsQueue{ nullptr };  //Graphics Queue is the first queue from the graphics queue family.
+    vk::Queue m_PresentQueue{ nullptr };
 
     #ifdef NDEBUG
     const bool m_DebugMode = false;
