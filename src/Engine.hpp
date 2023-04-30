@@ -28,10 +28,15 @@ private:
     vk::DispatchLoaderDynamic m_Dldi; // Dynamic Instance Dispatcher
     vk::SurfaceKHR m_Surface; // Surface
 
+    // Device-Related Variables.
     vk::PhysicalDevice m_PhysicalDevice{ nullptr }; // Vulkan Physical Device
     vk::Device m_Device{ nullptr }; // Vulkan Logical Device
     vk::Queue m_GraphicsQueue{ nullptr };  //Graphics Queue is the first queue from the graphics queue family.
     vk::Queue m_PresentQueue{ nullptr };
+    vk::SwapchainKHR m_Swapchain{ nullptr };
+    std::vector<vk::Image> m_SwapchainImages;
+    vk::Format m_SwapchainFormat;
+    vk::Extent2D m_SwapchainExtent;
 
     #ifdef NDEBUG
     const bool m_DebugMode = false;

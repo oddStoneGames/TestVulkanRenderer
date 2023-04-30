@@ -17,6 +17,7 @@ Engine::Engine(uint32_t width, uint32_t height) : m_Width(width), m_Height(heigh
 
 Engine::~Engine()
 {
+    m_Device.destroySwapchainKHR(m_Swapchain);
     m_Device.destroy(); 
     m_Instance.destroySurfaceKHR(m_Surface);
     if(m_DebugMode)
@@ -67,4 +68,11 @@ void Engine::CreateDevice()
 
     m_GraphicsQueue = queues[0];
     m_PresentQueue = queues[1];
+
+    vkInit::SwapChainBundle bundle = vkInit::CreateSwapChain(m_Device, m_PhysicalDevice, m_Surface, m_Width, m_Height);
+    m_Swapchain = bundle.swapchain;
+    m_SwapchainImages = bundle.images;
+    m_SwapchainFormat = bundle.format;
+    m_SwapchainExtent = bundle.extent;
+
 }
