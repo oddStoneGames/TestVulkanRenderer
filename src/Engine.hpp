@@ -8,6 +8,11 @@
 #include <cstdint>
 #include <vector>
 
+namespace vkInit
+{
+    struct SwapChainFrame;
+}
+
 class Engine
 {
 public:
@@ -17,6 +22,7 @@ private:
     void CreateGLFWWindow();
     void CreateVulkanInstance();
     void CreateDevice();
+    void CreatePipeline();
 private:
     // Window Properties and Window
     uint32_t m_Width, m_Height;
@@ -34,9 +40,14 @@ private:
     vk::Queue m_GraphicsQueue{ nullptr };  //Graphics Queue is the first queue from the graphics queue family.
     vk::Queue m_PresentQueue{ nullptr };
     vk::SwapchainKHR m_Swapchain{ nullptr };
-    std::vector<vk::Image> m_SwapchainImages;
+    std::vector<vkInit::SwapChainFrame> m_SwapchainFrames;
     vk::Format m_SwapchainFormat;
     vk::Extent2D m_SwapchainExtent;
+
+    // Pipeline-Related Variables.
+    vk::PipelineLayout m_PipelineLayout;
+    vk::RenderPass m_RenderPass;
+    vk::Pipeline m_Pipeline;
 
     #ifdef NDEBUG
     const bool m_DebugMode = false;

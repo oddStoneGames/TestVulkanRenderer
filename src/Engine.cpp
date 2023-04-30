@@ -2,6 +2,8 @@
 #include "Vulkan/Instance.hpp"
 #include "Vulkan/Debugging.hpp"
 #include "Vulkan/Device.hpp"
+#include "Vulkan/Swapchain.hpp"
+#include "Vulkan/Pipeline.hpp"
 
 Engine::Engine(uint32_t width, uint32_t height) : m_Width(width), m_Height(height)
 {
@@ -13,10 +15,18 @@ Engine::Engine(uint32_t width, uint32_t height) : m_Width(width), m_Height(heigh
 
     // Create Device
     CreateDevice();
+
+    // Create Pipeline
+    CreatePipeline();
 }
 
 Engine::~Engine()
 {
+    m_Device.destroyPipeline(m_Pipeline);
+    m_Device.destroyPipelineLayout(m_PipelineLayout);
+    m_Device.destroyRenderPass(m_RenderPass);
+    for (vkInit::SwapChainFrame frame : m_SwapchainFrames)
+        m_Device.destroyImageView(frame.imageView);
     m_Device.destroySwapchainKHR(m_Swapchain);
     m_Device.destroy(); 
     m_Instance.destroySurfaceKHR(m_Surface);
@@ -71,8 +81,22 @@ void Engine::CreateDevice()
 
     vkInit::SwapChainBundle bundle = vkInit::CreateSwapChain(m_Device, m_PhysicalDevice, m_Surface, m_Width, m_Height);
     m_Swapchain = bundle.swapchain;
-    m_SwapchainImages = bundle.images;
+    m_SwapchainFrames = bundle.frames;
     m_SwapchainFormat = bundle.format;
     m_SwapchainExtent = bundle.extent;
+}
 
+void Engine::CreatePipeline()
+{
+    vkInit::GraphicsPipelineInBundle specification{};
+    specification.device = m_Device;
+    specification.vertexShaderFilePath = PROJECT_DIR"/src/Shaders/TriangleVert.spv";
+    specification.fragmentShaderFilePath = PROJECT_DIR"/src/Shaders/TriangleFrag.spv";
+    specification.swapchainExtent = m_SwapchainExtent;
+    specification.swapchainImageFormat = m_SwapchainFormat;
+
+    vkInit::GraphicsPipelineOutBundle output = vkInit::MakeGraphicsPipeline(specification);
+    m_PipelineLayout = output.layout;
+    m_Pipeline = output.pipeline;
+    m_RenderPass = output.renderpass;
 }

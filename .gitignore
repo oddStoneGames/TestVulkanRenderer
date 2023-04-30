@@ -22,3 +22,4 @@ x64/
 CMakeCache.txt
 **.ini
 vendor/glfw/src/glfw_config.h
+**.spv
