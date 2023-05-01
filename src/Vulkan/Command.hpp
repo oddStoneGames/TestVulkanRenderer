@@ -13,7 +13,7 @@ namespace vkInit
 		std::vector<SwapChainFrame>& frames;
 	};
 
-	vk::CommandPool CreateCommandPool(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface)
+	inline vk::CommandPool CreateCommandPool(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface)
 	{
 		QueueFamilyIndices queueFamilyIndices = FindQueueFamilies(physicalDevice, surface);
 
@@ -32,7 +32,27 @@ namespace vkInit
 		}
 	}
 
-	vk::CommandBuffer CreateCommandBuffers(CommandBufferInputChunk input)
+	inline vk::CommandBuffer CreateCommandBuffer(CommandBufferInputChunk input)
+	{
+		vk::CommandBufferAllocateInfo allocInfo{};
+		allocInfo.commandPool = input.commandPool;
+		allocInfo.level = vk::CommandBufferLevel::ePrimary;
+		allocInfo.commandBufferCount = 1;
+
+		try
+		{
+			vk::CommandBuffer commandBuffer = input.device.allocateCommandBuffers(allocInfo)[0];
+			CONSOLE_INFO("Allocated command buffer for engine.");
+			return commandBuffer;
+		}
+		catch (const vk::SystemError& err)
+		{
+			CONSOLE_ERROR("Failed to Allocate command buffer for engine! %s", err.what());
+			return nullptr;
+		}
+	}
+
+	inline void CreateFrameCommandBuffers(CommandBufferInputChunk input)
 	{
 		vk::CommandBufferAllocateInfo allocInfo{};
 		allocInfo.commandPool = input.commandPool;
@@ -51,18 +71,6 @@ namespace vkInit
 			{
 				CONSOLE_ERROR("Failed to Allocate command buffer for frame %d! %s", i, err.what());
 			}
-		}
-
-		try
-		{
-			vk::CommandBuffer commandBuffer = input.device.allocateCommandBuffers(allocInfo)[0];
-			CONSOLE_INFO("Allocated command buffer for engine.");
-			return commandBuffer;
-		}
-		catch (const vk::SystemError& err)
-		{
-			CONSOLE_ERROR("Failed to Allocate command buffer for engine! %s", err.what());
-			return nullptr;
 		}
 	}
 }

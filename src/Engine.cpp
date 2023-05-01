@@ -32,19 +32,11 @@ Engine::~Engine()
 {
     m_Device.waitIdle();
 
+    DestroySwapchain();
     m_Device.destroyCommandPool(m_CommandPool);
     m_Device.destroyPipeline(m_Pipeline);
     m_Device.destroyPipelineLayout(m_PipelineLayout);
     m_Device.destroyRenderPass(m_RenderPass);
-    for (vkInit::SwapChainFrame frame : m_SwapchainFrames)
-    {
-        m_Device.destroyImageView(frame.imageView);
-        m_Device.destroyFramebuffer(frame.framebuffer);
-        m_Device.destroyFence(frame.inFlight);
-        m_Device.destroySemaphore(frame.imageAvailable);
-        m_Device.destroySemaphore(frame.renderComplete);
-    }
-    m_Device.destroySwapchainKHR(m_Swapchain);
     m_Device.destroy(); 
     m_Instance.destroySurfaceKHR(m_Surface);
     if(m_DebugMode)
@@ -62,7 +54,6 @@ void Engine::CreateGLFWWindow()
     CONSOLE_INFO("Intializing GLFW!");
     glfwInit();
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
     m_Window = glfwCreateWindow(m_Width, m_Height, "Vulkan Renderer", nullptr, nullptr);
 
@@ -96,12 +87,7 @@ void Engine::CreateDevice()
     m_GraphicsQueue = queues[0];
     m_PresentQueue = queues[1];
 
-    vkInit::SwapChainBundle bundle = vkInit::CreateSwapChain(m_Device, m_PhysicalDevice, m_Surface, m_Width, m_Height);
-    m_Swapchain = bundle.swapchain;
-    m_SwapchainFrames = bundle.frames;
-    m_SwapchainFormat = bundle.format;
-    m_SwapchainExtent = bundle.extent;
-    m_MaxFramesInFlight = static_cast<int>(m_SwapchainFrames.size());
+    CreateSwapchain();
     m_FrameNumber = 0;
 }
 
@@ -120,25 +106,81 @@ void Engine::CreatePipeline()
     m_RenderPass = output.renderpass;
 }
 
-void Engine::FinalRenderingSetup()
+void Engine::CreateSwapchain()
+{
+    vkInit::SwapChainBundle bundle = vkInit::CreateSwapChain(m_Device, m_PhysicalDevice, m_Surface, m_Width, m_Height);
+    m_Swapchain = bundle.swapchain;
+    m_SwapchainFrames = bundle.frames;
+    m_SwapchainFormat = bundle.format;
+    m_SwapchainExtent = bundle.extent;
+    m_MaxFramesInFlight = static_cast<int>(m_SwapchainFrames.size());
+}
+
+void Engine::RecreateSwapchain()
+{
+    m_Width = 0;
+    m_Height = 0;
+
+    while (m_Width == 0 || m_Height == 0)
+    {
+        glfwGetFramebufferSize(m_Window, &m_Width, &m_Height);
+        glfwWaitEvents();
+    }
+
+    m_Device.waitIdle();
+    DestroySwapchain();
+
+    CreateSwapchain();
+    CreateFramebuffers();
+    CreateSyncObjects();
+    vkInit::CommandBufferInputChunk commandBufferInput = { m_Device, m_CommandPool, m_SwapchainFrames };
+    vkInit::CreateFrameCommandBuffers(commandBufferInput);
+}
+
+void Engine::DestroySwapchain()
+{
+    for (const vkInit::SwapChainFrame& frame : m_SwapchainFrames)
+    {
+        m_Device.destroyImageView(frame.imageView);
+        m_Device.destroyFramebuffer(frame.framebuffer);
+        m_Device.destroyFence(frame.inFlight);
+        m_Device.destroySemaphore(frame.imageAvailable);
+        m_Device.destroySemaphore(frame.renderComplete);
+        m_Device.freeCommandBuffers(m_CommandPool, frame.commandBuffer);
+    }
+    m_Device.destroySwapchainKHR(m_Swapchain);
+}
+
+void Engine::CreateFramebuffers()
 {
     vkInit::FramebufferInput input;
     input.device = m_Device;
     input.renderPass = m_RenderPass;
     input.swapchainextent = m_SwapchainExtent;
     vkInit::CreateFramebuffers(input, m_SwapchainFrames);
+}
 
-    m_CommandPool = vkInit::CreateCommandPool(m_Device, m_PhysicalDevice, m_Surface);
-
-    vkInit::CommandBufferInputChunk commandBufferInput = { m_Device, m_CommandPool, m_SwapchainFrames };
-    m_MainCommandBuffer = vkInit::CreateCommandBuffers(commandBufferInput);
-
+void Engine::CreateSyncObjects()
+{
     for (vkInit::SwapChainFrame& frame : m_SwapchainFrames)
     {
         frame.inFlight = vkInit::CreateFence(m_Device);
         frame.imageAvailable = vkInit::CreateSemaphore(m_Device);
         frame.renderComplete = vkInit::CreateSemaphore(m_Device);
     }
+}
+
+void Engine::FinalRenderingSetup()
+{
+    CreateFramebuffers();
+
+    m_CommandPool = vkInit::CreateCommandPool(m_Device, m_PhysicalDevice, m_Surface);
+
+    vkInit::CommandBufferInputChunk commandBufferInput = { m_Device, m_CommandPool, m_SwapchainFrames };
+    m_MainCommandBuffer = vkInit::CreateCommandBuffer(commandBufferInput);
+    vkInit::CreateFrameCommandBuffers(commandBufferInput);
+
+    CreateSyncObjects();
 }
 
 void Engine::RenderLoop(Scene* scene)
@@ -149,9 +191,21 @@ void Engine::RenderLoop(Scene* scene)
         DisplayFramerate();
 
         m_Device.waitForFences(1, &m_SwapchainFrames[m_FrameNumber].inFlight, VK_TRUE, UINT32_MAX);
+
+        uint32_t imageIndex = -1;
+        try
+        {
+            vk::ResultValue acquire = m_Device.acquireNextImageKHR(m_Swapchain, UINT32_MAX, m_SwapchainFrames[m_FrameNumber].imageAvailable, nullptr);
+            imageIndex = acquire.value;
+        }
+        catch (const vk::OutOfDateKHRError& err)
+        {
+            CONSOLE_INFO("Recreate Swapchain!");
+            RecreateSwapchain();
+            continue;
+        }
         m_Device.resetFences(1, &m_SwapchainFrames[m_FrameNumber].inFlight);
 
-        uint32_t imageIndex =  m_Device.acquireNextImageKHR(m_Swapchain, UINT32_MAX, m_SwapchainFrames[m_FrameNumber].imageAvailable, nullptr).value;
         vk::CommandBuffer commandBuffer = m_SwapchainFrames[m_FrameNumber].commandBuffer;
         commandBuffer.reset();
         RecordDrawCommands(commandBuffer, imageIndex, scene);
@@ -186,7 +240,22 @@ void Engine::RenderLoop(Scene* scene)
         presentInfo.pSwapchains = swapchains;
         presentInfo.pImageIndices = &imageIndex;
 
-        m_PresentQueue.presentKHR(presentInfo);
+        vk::Result present;
+        try
+        {
+            present = m_PresentQueue.presentKHR(presentInfo);
+        }
+        catch (const vk::OutOfDateKHRError& err)
+        {
+            present = vk::Result::eErrorOutOfDateKHR;
+        }
+        
+        if (present == vk::Result::eErrorOutOfDateKHR || present == vk::Result::eSuboptimalKHR)
+        {
+            CONSOLE_INFO("Recreate Swapchain!");
+            RecreateSwapchain();
+            continue;
+        }
 
         m_FrameNumber = (m_FrameNumber + 1) % m_MaxFramesInFlight;
     }

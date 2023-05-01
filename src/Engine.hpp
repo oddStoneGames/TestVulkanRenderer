@@ -24,12 +24,17 @@ private:
     void CreateVulkanInstance();
     void CreateDevice();
     void CreatePipeline();
+    void CreateSwapchain();
+    void RecreateSwapchain();
+    void DestroySwapchain();
+    void CreateFramebuffers();
+    void CreateSyncObjects();
     void FinalRenderingSetup();
     void DisplayFramerate();
     void RecordDrawCommands(vk::CommandBuffer commandBuffer, uint32_t imageIndex, Scene* scene);
 private:
     // Window Properties and Window
-    uint32_t m_Width, m_Height;
+    int m_Width, m_Height;
     GLFWwindow* m_Window{ nullptr };
 
     // Instance-Related Variables.
