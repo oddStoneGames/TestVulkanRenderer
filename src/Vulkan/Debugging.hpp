@@ -142,22 +142,22 @@ suitable for use as a fragment density map image.");
             result.push_back("Fragment Shading Rate Attachment: specifies that the image can be used to create a VkImageView \
 suitable for use as a fragment shading rate attachment or shading rate image");
 
-        if (bits & vk::ImageUsageFlagBits::eVideoDecodeDstKHR)
-            result.push_back("Video Decode Destination: specifies that the image can be used as a \
-decode output picture in a video decode operation.");
+//         if (bits & vk::ImageUsageFlagBits::eVideoDecodeDstKHR)
+//             result.push_back("Video Decode Destination: specifies that the image can be used as a \
+// decode output picture in a video decode operation.");
 
-        if (bits & vk::ImageUsageFlagBits::eVideoDecodeSrcKHR)
-            result.push_back("Video Decode Source: reserved for future use.");
+//         if (bits & vk::ImageUsageFlagBits::eVideoDecodeSrcKHR)
+//             result.push_back("Video Decode Source: reserved for future use.");
 
-        if (bits & vk::ImageUsageFlagBits::eVideoDecodeDpbKHR)
-            result.push_back("Video Decode Dpb: specifies that the image can be used as an \
-output reconstructed picture or an input reference picture in a video decode operation.");
+//         if (bits & vk::ImageUsageFlagBits::eVideoDecodeDpbKHR)
+//             result.push_back("Video Decode Dpb: specifies that the image can be used as an \
+// output reconstructed picture or an input reference picture in a video decode operation.");
 
-        if (bits & vk::ImageUsageFlagBits::eAttachmentFeedbackLoopEXT)
-            result.push_back("Feedback Loop Attachment: specifies that the image can be transitioned \
-to the VK_IMAGE_LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT layout to be used as a color \
-or depth/stencil attachment in a VkFramebuffer and/or as a read-only input resource in a \
-shader (sampled image, combined image sampler or input attachment) in the same render pass.");
+//         if (bits & vk::ImageUsageFlagBits::eAttachmentFeedbackLoopEXT)
+//             result.push_back("Feedback Loop Attachment: specifies that the image can be transitioned \
+// to the VK_IMAGE_LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT layout to be used as a color \
+// or depth/stencil attachment in a VkFramebuffer and/or as a read-only input resource in a \
+// shader (sampled image, combined image sampler or input attachment) in the same render pass.");
 
         return result;
     }
