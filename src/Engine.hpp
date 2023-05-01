@@ -18,11 +18,15 @@ class Engine
 public:
     Engine(uint32_t width = 1280, uint32_t height = 720);
     ~Engine();
+    void RenderLoop();
 private:
     void CreateGLFWWindow();
     void CreateVulkanInstance();
     void CreateDevice();
     void CreatePipeline();
+    void FinalRenderingSetup();
+    void DisplayFramerate();
+    void RecordDrawCommands(vk::CommandBuffer commandBuffer, uint32_t imageIndex);
 private:
     // Window Properties and Window
     uint32_t m_Width, m_Height;
@@ -48,6 +52,16 @@ private:
     vk::PipelineLayout m_PipelineLayout;
     vk::RenderPass m_RenderPass;
     vk::Pipeline m_Pipeline;
+
+    //Command-Related Variables
+    vk::CommandPool m_CommandPool;
+    vk::CommandBuffer m_MainCommandBuffer;
+
+    //Synchronization-Related Variables
+    vk::Fence m_InFlightFence;
+    vk::Semaphore m_ImageAvailable, m_RenderComplete;
+    double m_CurrentTime = 0.0, m_LastTime = 0.0;
+    int m_NumFrames = 0;
 
     #ifdef NDEBUG
     const bool m_DebugMode = false;

@@ -114,7 +114,7 @@ namespace vkInit
         {
             return vk::createInstance(createInfo);
         }
-        catch (vk::SystemError err)
+        catch (const vk::SystemError& err)
         {
             CONSOLE_ERROR("Failed to Create VKInstance! %s", err.what());
             return nullptr;

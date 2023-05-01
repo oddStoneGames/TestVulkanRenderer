@@ -4,6 +4,7 @@
 #include "../Config.hpp"
 #include "Debugging.hpp"
 #include "QueueFamily.hpp"
+#include "Frame.hpp"
 
 namespace vkInit
 {
@@ -12,12 +13,6 @@ namespace vkInit
         vk::SurfaceCapabilitiesKHR capabilities;
         std::vector<vk::SurfaceFormatKHR> formats;
         std::vector<vk::PresentModeKHR> presentModes;
-    };
-
-    struct SwapChainFrame
-    {
-        vk::Image image;
-        vk::ImageView imageView;
     };
 
     struct SwapChainBundle
