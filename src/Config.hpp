@@ -9,4 +9,7 @@
 #include <set>
 #include <optional>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
 #endif // !CONFIG_HPP

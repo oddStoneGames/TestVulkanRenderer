@@ -8,8 +8,11 @@ int main()
     // Create Vulkan Engine.
     Engine vulkanEngine;
     
+    // Create a default scene.
+    Scene scene;
+
     // Start the Render Loop!
-    vulkanEngine.RenderLoop();
+    vulkanEngine.RenderLoop(&scene);
 
     return 0;
 }

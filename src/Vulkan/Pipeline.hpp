@@ -3,6 +3,7 @@
 
 #include "../Config.hpp"
 #include "../Shader.hpp"
+#include "PushConstants.hpp"
 
 namespace vkInit
 {
@@ -27,7 +28,12 @@ namespace vkInit
 		vk::PipelineLayoutCreateInfo layoutInfo{};
 		layoutInfo.flags = vk::PipelineLayoutCreateFlags();
 		layoutInfo.setLayoutCount = 0;
-		layoutInfo.pushConstantRangeCount = 0;
+		layoutInfo.pushConstantRangeCount = 1;
+		vk::PushConstantRange pushConstantInfo{};
+		pushConstantInfo.offset = 0;
+		pushConstantInfo.size = sizeof(Constants);
+		pushConstantInfo.stageFlags = vk::ShaderStageFlagBits::eVertex;
+		layoutInfo.pPushConstantRanges = &pushConstantInfo;
 
 		try
 		{

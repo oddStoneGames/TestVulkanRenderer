@@ -50,9 +50,10 @@ set(SOURCE_FILES src/Engine.cpp src/Engine.hpp src/EntryPoint.cpp
                  src/Logger.cpp src/Logger.hpp
                  src/Config.hpp
                  src/Shader.hpp
+                 src/Scene.hpp src/Scene.cpp
                  src/Vulkan/Instance.hpp src/Vulkan/Debugging.hpp src/Vulkan/Device.hpp src/Vulkan/Frame.hpp
                  src/Vulkan/Swapchain.hpp src/Vulkan/QueueFamily.hpp src/Vulkan/Pipeline.hpp
-                 src/Vulkan/Framebuffer.hpp src/Vulkan/Command.hpp src/Vulkan/Sync.hpp)
+                 src/Vulkan/Framebuffer.hpp src/Vulkan/Command.hpp src/Vulkan/Sync.hpp src/Vulkan/PushConstants.hpp)
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 
 # Set this project as startup project

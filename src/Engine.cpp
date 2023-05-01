@@ -141,7 +141,7 @@ void Engine::FinalRenderingSetup()
     }
 }
 
-void Engine::RenderLoop()
+void Engine::RenderLoop(Scene* scene)
 {
     while (!glfwWindowShouldClose(m_Window))
     {
@@ -154,7 +154,7 @@ void Engine::RenderLoop()
         uint32_t imageIndex =  m_Device.acquireNextImageKHR(m_Swapchain, UINT32_MAX, m_SwapchainFrames[m_FrameNumber].imageAvailable, nullptr).value;
         vk::CommandBuffer commandBuffer = m_SwapchainFrames[m_FrameNumber].commandBuffer;
         commandBuffer.reset();
-        RecordDrawCommands(commandBuffer, imageIndex);
+        RecordDrawCommands(commandBuffer, imageIndex, scene);
 
         vk::SubmitInfo submitInfo{};
         vk::Semaphore waitSemaphores[] = { m_SwapchainFrames[m_FrameNumber].imageAvailable };
@@ -210,7 +210,7 @@ void Engine::DisplayFramerate()
     m_NumFrames++;
 }
 
-void Engine::RecordDrawCommands(vk::CommandBuffer commandBuffer, uint32_t imageIndex)
+void Engine::RecordDrawCommands(vk::CommandBuffer commandBuffer, uint32_t imageIndex, Scene* scene)
 {
     vk::CommandBufferBeginInfo beginInfo{};
 
@@ -235,7 +235,16 @@ void Engine::RecordDrawCommands(vk::CommandBuffer commandBuffer, uint32_t imageI
 
     commandBuffer.beginRenderPass(&renderPassInfo, vk::SubpassContents::eInline);
     commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_Pipeline);
-    commandBuffer.draw(3, 1, 0, 0);
+
+    for (glm::vec3 pos : scene->trianglePositions)
+    {
+        glm::mat4 model = glm::translate(glm::mat4(1.0f), pos);
+        vkInit::Constants constant;
+        constant.model = model;
+        commandBuffer.pushConstants(m_PipelineLayout, vk::ShaderStageFlagBits::eVertex, 0, sizeof(constant), &constant);
+        commandBuffer.draw(3, 1, 0, 0);
+    }
+    
     commandBuffer.endRenderPass();
     
     try

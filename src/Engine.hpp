@@ -1,7 +1,7 @@
 #ifndef ENGINE_HPP
 #define ENGINE_HPP
 
-#include "Config.hpp"
+#include "Scene.hpp"
 
 #include <GLFW/glfw3.h>
 
@@ -18,7 +18,7 @@ class Engine
 public:
     Engine(uint32_t width = 1280, uint32_t height = 720);
     ~Engine();
-    void RenderLoop();
+    void RenderLoop(Scene* scene);
 private:
     void CreateGLFWWindow();
     void CreateVulkanInstance();
@@ -26,7 +26,7 @@ private:
     void CreatePipeline();
     void FinalRenderingSetup();
     void DisplayFramerate();
-    void RecordDrawCommands(vk::CommandBuffer commandBuffer, uint32_t imageIndex);
+    void RecordDrawCommands(vk::CommandBuffer commandBuffer, uint32_t imageIndex, Scene* scene);
 private:
     // Window Properties and Window
     uint32_t m_Width, m_Height;
