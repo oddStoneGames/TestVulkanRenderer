@@ -57,9 +57,9 @@ private:
     vk::CommandPool m_CommandPool;
     vk::CommandBuffer m_MainCommandBuffer;
 
-    //Synchronization-Related Variables
-    vk::Fence m_InFlightFence;
-    vk::Semaphore m_ImageAvailable, m_RenderComplete;
+    int m_MaxFramesInFlight, m_FrameNumber;
+
+    //Framerate-Related Variables
     double m_CurrentTime = 0.0, m_LastTime = 0.0;
     int m_NumFrames = 0;
 

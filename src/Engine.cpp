@@ -32,17 +32,17 @@ Engine::~Engine()
 {
     m_Device.waitIdle();
 
-    m_Device.destroyFence(m_InFlightFence);
-    m_Device.destroySemaphore(m_ImageAvailable);
-    m_Device.destroySemaphore(m_RenderComplete);
     m_Device.destroyCommandPool(m_CommandPool);
     m_Device.destroyPipeline(m_Pipeline);
     m_Device.destroyPipelineLayout(m_PipelineLayout);
     m_Device.destroyRenderPass(m_RenderPass);
-    for (const vkInit::SwapChainFrame& frame : m_SwapchainFrames)
+    for (vkInit::SwapChainFrame frame : m_SwapchainFrames)
     {
         m_Device.destroyImageView(frame.imageView);
         m_Device.destroyFramebuffer(frame.framebuffer);
+        m_Device.destroyFence(frame.inFlight);
+        m_Device.destroySemaphore(frame.imageAvailable);
+        m_Device.destroySemaphore(frame.renderComplete);
     }
     m_Device.destroySwapchainKHR(m_Swapchain);
     m_Device.destroy(); 
@@ -101,6 +101,8 @@ void Engine::CreateDevice()
     m_SwapchainFrames = bundle.frames;
     m_SwapchainFormat = bundle.format;
     m_SwapchainExtent = bundle.extent;
+    m_MaxFramesInFlight = static_cast<int>(m_SwapchainFrames.size());
+    m_FrameNumber = 0;
 }
 
 void Engine::CreatePipeline()
@@ -131,9 +133,12 @@ void Engine::FinalRenderingSetup()
     vkInit::CommandBufferInputChunk commandBufferInput = { m_Device, m_CommandPool, m_SwapchainFrames };
     m_MainCommandBuffer = vkInit::CreateCommandBuffers(commandBufferInput);
 
-    m_InFlightFence = vkInit::CreateFence(m_Device);
-    m_ImageAvailable = vkInit::CreateSemaphore(m_Device);
-    m_RenderComplete = vkInit::CreateSemaphore(m_Device);
+    for (vkInit::SwapChainFrame& frame : m_SwapchainFrames)
+    {
+        frame.inFlight = vkInit::CreateFence(m_Device);
+        frame.imageAvailable = vkInit::CreateSemaphore(m_Device);
+        frame.renderComplete = vkInit::CreateSemaphore(m_Device);
+    }
 }
 
 void Engine::RenderLoop()
@@ -143,16 +148,16 @@ void Engine::RenderLoop()
         glfwPollEvents();
         DisplayFramerate();
 
-        m_Device.waitForFences(1, &m_InFlightFence, VK_TRUE, UINT32_MAX);
-        m_Device.resetFences(1, &m_InFlightFence);
+        m_Device.waitForFences(1, &m_SwapchainFrames[m_FrameNumber].inFlight, VK_TRUE, UINT32_MAX);
+        m_Device.resetFences(1, &m_SwapchainFrames[m_FrameNumber].inFlight);
 
-        uint32_t imageIndex =  m_Device.acquireNextImageKHR(m_Swapchain, UINT32_MAX, m_ImageAvailable, nullptr).value;
-        vk::CommandBuffer commandBuffer = m_SwapchainFrames[imageIndex].commandBuffer;
+        uint32_t imageIndex =  m_Device.acquireNextImageKHR(m_Swapchain, UINT32_MAX, m_SwapchainFrames[m_FrameNumber].imageAvailable, nullptr).value;
+        vk::CommandBuffer commandBuffer = m_SwapchainFrames[m_FrameNumber].commandBuffer;
         commandBuffer.reset();
         RecordDrawCommands(commandBuffer, imageIndex);
 
         vk::SubmitInfo submitInfo{};
-        vk::Semaphore waitSemaphores[] = { m_ImageAvailable };
+        vk::Semaphore waitSemaphores[] = { m_SwapchainFrames[m_FrameNumber].imageAvailable };
         vk::PipelineStageFlags waitStages[] = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
         submitInfo.waitSemaphoreCount = 1;
         submitInfo.pWaitSemaphores = waitSemaphores;
@@ -160,13 +165,13 @@ void Engine::RenderLoop()
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers = &commandBuffer;
         
-        vk::Semaphore signalSemaphores[] = { m_RenderComplete };
+        vk::Semaphore signalSemaphores[] = { m_SwapchainFrames[m_FrameNumber].renderComplete };
         submitInfo.signalSemaphoreCount = 1;
         submitInfo.pSignalSemaphores = signalSemaphores;
 
         try
         {
-            m_GraphicsQueue.submit(submitInfo, m_InFlightFence);
+            m_GraphicsQueue.submit(submitInfo, m_SwapchainFrames[m_FrameNumber].inFlight);
         }
         catch (const vk::SystemError& err)
         {
@@ -182,6 +187,8 @@ void Engine::RenderLoop()
         presentInfo.pImageIndices = &imageIndex;
 
         m_PresentQueue.presentKHR(presentInfo);
+
+        m_FrameNumber = (m_FrameNumber + 1) % m_MaxFramesInFlight;
     }
 }
 

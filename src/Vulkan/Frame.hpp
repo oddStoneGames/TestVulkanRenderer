@@ -11,6 +11,8 @@ namespace vkInit
         vk::ImageView imageView;
         vk::Framebuffer framebuffer;
         vk::CommandBuffer commandBuffer;
+        vk::Semaphore imageAvailable, renderComplete;
+        vk::Fence inFlight;
     };
 }
 
