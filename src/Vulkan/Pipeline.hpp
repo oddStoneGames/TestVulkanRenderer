@@ -4,6 +4,7 @@
 #include "../Config.hpp"
 #include "../Shader.hpp"
 #include "PushConstants.hpp"
+#include "Mesh.hpp"
 
 namespace vkInit
 {
@@ -95,10 +96,15 @@ namespace vkInit
 		std::vector<vk::PipelineShaderStageCreateInfo> shaderStages;
 
 		// Vertex Input
+		vk::VertexInputBindingDescription vertexBindingDescription = vkMesh::GetPosColorBindingDescription();
+		std::array<vk::VertexInputAttributeDescription, 2> vertexAttributeDescriptions = vkMesh::GetPosColorAttributeDescriptions();
+
 		vk::PipelineVertexInputStateCreateInfo vertexInputInfo{};
 		vertexInputInfo.flags = vk::PipelineVertexInputStateCreateFlags();
-		vertexInputInfo.vertexBindingDescriptionCount = 0;
-		vertexInputInfo.vertexAttributeDescriptionCount = 0;
+		vertexInputInfo.vertexBindingDescriptionCount = 1;
+		vertexInputInfo.pVertexBindingDescriptions = &vertexBindingDescription;
+		vertexInputInfo.vertexAttributeDescriptionCount = 2;
+		vertexInputInfo.pVertexAttributeDescriptions = vertexAttributeDescriptions.data();
 		createInfo.pVertexInputState = &vertexInputInfo;
 
 		// Input Assembly

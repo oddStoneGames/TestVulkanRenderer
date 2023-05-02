@@ -26,12 +26,16 @@ Engine::Engine(uint32_t width, uint32_t height) : m_Width(width), m_Height(heigh
     // Do all the other things like
     // create framebuffers, command pool, use synchronization.
     FinalRenderingSetup();
+
+    // Create Assets
+    CreateAssets();
 }
 
 Engine::~Engine()
 {
     m_Device.waitIdle();
 
+    m_TriangleMesh->Destroy();
     DestroySwapchain();
     m_Device.destroyCommandPool(m_CommandPool);
     m_Device.destroyPipeline(m_Pipeline);
@@ -305,6 +309,8 @@ void Engine::RecordDrawCommands(vk::CommandBuffer commandBuffer, uint32_t imageI
     commandBuffer.beginRenderPass(&renderPassInfo, vk::SubpassContents::eInline);
     commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_Pipeline);
 
+    PrepareScene(commandBuffer);
+
     for (glm::vec3 pos : scene->trianglePositions)
     {
         glm::mat4 model = glm::translate(glm::mat4(1.0f), pos);
@@ -324,4 +330,16 @@ void Engine::RecordDrawCommands(vk::CommandBuffer commandBuffer, uint32_t imageI
     {
         CONSOLE_ERROR("Failed to finish recording command buffer! %s", err.what());
     }
+}
+
+void Engine::CreateAssets()
+{
+    m_TriangleMesh = std::make_unique<TriangleMesh>(m_Device, m_PhysicalDevice);
+}
+
+void Engine::PrepareScene(vk::CommandBuffer commandBuffer)
+{
+    vk::Buffer vertexBuffers[] = { m_TriangleMesh->vertexBuffer.buffer };
+    vk::DeviceSize offsets[] = { 0 };
+    commandBuffer.bindVertexBuffers(0, 1, vertexBuffers, offsets);
 }

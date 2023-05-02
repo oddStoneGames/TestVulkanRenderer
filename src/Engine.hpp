@@ -2,6 +2,7 @@
 #define ENGINE_HPP
 
 #include "Scene.hpp"
+#include "TriangleMesh.hpp"
 
 #include <GLFW/glfw3.h>
 
@@ -32,6 +33,8 @@ private:
     void FinalRenderingSetup();
     void DisplayFramerate();
     void RecordDrawCommands(vk::CommandBuffer commandBuffer, uint32_t imageIndex, Scene* scene);
+    void CreateAssets();
+    void PrepareScene(vk::CommandBuffer commandBuffer);
 private:
     // Window Properties and Window
     int m_Width, m_Height;
@@ -62,7 +65,11 @@ private:
     vk::CommandPool m_CommandPool;
     vk::CommandBuffer m_MainCommandBuffer;
 
+    //Synchronization-Related Objects
     int m_MaxFramesInFlight, m_FrameNumber;
+
+    // Assets
+    std::unique_ptr<TriangleMesh> m_TriangleMesh;
 
     //Framerate-Related Variables
     double m_CurrentTime = 0.0, m_LastTime = 0.0;
